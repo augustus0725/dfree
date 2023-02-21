@@ -75,7 +75,7 @@ func detectConfig() {
 
 }
 
-func Home() (string, error) {
+func home() (string, error) {
 	currentUser, err := user.Current()
 	if nil == err {
 		return currentUser.HomeDir, nil

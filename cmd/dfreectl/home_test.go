@@ -6,7 +6,7 @@ import (
 )
 
 func TestHome(t *testing.T) {
-	home, err := Home()
+	homeDir, err := home()
 	require.True(t, err == nil)
-	require.NotNil(t, home)
+	require.NotNil(t, homeDir)
 }
