@@ -138,7 +138,7 @@ func detectConfig() error {
 				return err
 			}
 			// TODO check valid for daemonAddress
-			dfreeDaemonAddress = daemonAddress
+			dfreeDaemonAddress = strings.Trim(daemonAddress, "\r\n ")
 			config.DaemonAddress = dfreeDaemonAddress
 			configBytes, err := yaml.Marshal(&config)
 			if err != nil {
