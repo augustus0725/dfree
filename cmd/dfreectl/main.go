@@ -1,13 +1,18 @@
 package main
 
 import (
+	"bufio"
 	"bytes"
 	"dfree/cmd/dfreectl/dfree_client"
 	"errors"
+	"fmt"
 	"gopkg.in/alecthomas/kingpin.v2"
+	"gopkg.in/yaml.v3"
+	"io"
 	"os"
 	"os/exec"
 	"os/user"
+	"path"
 	"runtime"
 	"strings"
 )
@@ -46,8 +51,17 @@ var (
 	logInstanceName     = logs.Arg("target", "Get log from the target resource.").Required().String()
 )
 
+type Config struct {
+	DaemonAddress string `yaml:"daemonAddress"`
+}
+
+var dfreeDaemonAddress string
+
 func main() {
-	detectConfig()
+	err := detectConfig()
+	if err != nil {
+		return
+	}
 
 	switch kingpin.MustParse(app.Parse(os.Args[1:])) {
 	case apply.FullCommand():
@@ -71,8 +85,93 @@ func main() {
 	}
 }
 
-func detectConfig() {
+func detectConfig() error {
+	home, err := home()
+	if err != nil {
+		return err
+	}
+	dfreeConfDir := path.Join(home, ".dfree")
+	if _, err := os.Stat(dfreeConfDir); os.IsNotExist(err) {
+		err := os.Mkdir(dfreeConfDir, os.ModePerm)
+		if err != nil {
+			return err
+		}
+	}
+	dfreeConf := path.Join(dfreeConfDir, "dfree.conf")
+	config := Config{
+		DaemonAddress: "127.0.0.1:7856",
+	}
+	if _, err := os.Stat(dfreeConf); os.IsNotExist(err) {
+		reader := bufio.NewReader(os.Stdin)
+		dfreeConfFile, err := os.Create(dfreeConf)
+		if err != nil {
+			return err
+		}
+		defer func(dfreeConfFile *os.File) {
+			err := dfreeConfFile.Close()
+			if err != nil {
+				// ignore
+			}
+		}(dfreeConfFile)
+		print(fmt.Sprintf("%s not config, use default dfree-daemon address(127.0.0.1:7856)? Y/N:", dfreeConf))
+		yesOrNo, err := reader.ReadString('\n')
+		if err != nil {
+			return err
+		}
+		yesOrNoTrimed := strings.TrimSpace(yesOrNo)
+		if yesOrNoTrimed == "yes" || yesOrNoTrimed == "y" || yesOrNoTrimed == "Y" {
+			configBytes, err := yaml.Marshal(&config)
+			if err != nil {
+				return err
+			}
 
+			_, err = dfreeConfFile.Write(configBytes)
+			if err != nil {
+				return err
+			}
+			dfreeDaemonAddress = "127.0.0.1:7856"
+			return nil
+		} else {
+			print("Please set dfree daemon address(e.g.: 127.0.0.1:7856):")
+			daemonAddress, err := reader.ReadString('\n')
+			if err != nil {
+				return err
+			}
+			// TODO check valid for daemonAddress
+			dfreeDaemonAddress = daemonAddress
+			config.DaemonAddress = dfreeDaemonAddress
+			configBytes, err := yaml.Marshal(&config)
+			if err != nil {
+				return err
+			}
+			_, err = dfreeConfFile.Write(configBytes)
+			if err != nil {
+				return err
+			}
+		}
+	} else {
+		fConf, err := os.Open(dfreeConf)
+		if err != nil {
+			return err
+		}
+		defer func(fConf *os.File) {
+			err := fConf.Close()
+			if err != nil {
+				// Ignore
+			}
+		}(fConf)
+		allBytes, err := io.ReadAll(fConf)
+		if err != nil {
+			return err
+		}
+		err = yaml.Unmarshal(allBytes, &config)
+		if err != nil {
+			return err
+		}
+		dfreeDaemonAddress = config.DaemonAddress
+	}
+
+	return nil
 }
 
 func home() (string, error) {
