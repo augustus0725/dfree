@@ -1,0 +1,16 @@
+apiVersion: apps/v1
+kind: DfreeInstance
+metadata:
+  name: helloinstance
+  namespace: dev
+  labels:
+    nation: us
+spec:
+  instance:
+    template: LogFile
+    scheduleStrategy:
+      schedulingStrategy: "CRON_DRIVEN"
+      schedulingPeriod: "* * * * * ?"
+    properties:
+      dfree_getfile_v01:
+        "Input Directory": "/opt/getfile/001"
