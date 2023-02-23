@@ -6,6 +6,8 @@ import (
 	"dfree/cmd/dfreectl/dfree_client"
 	"errors"
 	"fmt"
+	"github.com/go-resty/resty/v2"
+	"github.com/jedib0t/go-pretty/v6/table"
 	"gopkg.in/alecthomas/kingpin.v2"
 	"gopkg.in/yaml.v3"
 	"io"
@@ -62,26 +64,33 @@ func main() {
 	if err != nil {
 		return
 	}
+	tableWriter := table.NewWriter()
+	tableWriter.SetOutputMirror(os.Stdout)
+	dc := dfree_client.DfreeClient{
+		Client:        resty.New(),
+		DaemonAddress: dfreeDaemonAddress,
+		TableWriter:   tableWriter,
+	}
 
 	switch kingpin.MustParse(app.Parse(os.Args[1:])) {
 	case apply.FullCommand():
-		dfree_client.Apply(*resourceFlag)
+		dc.Apply(*resourceFlag)
 	case getInstance.FullCommand():
-		dfree_client.GetInstances(*getInstanceFlag)
+		dc.GetInstances(*getInstanceFlag)
 	case getNamespace.FullCommand():
-		dfree_client.ListNamespaces()
+		dc.ListNamespaces()
 	case createNamespace.FullCommand():
-		dfree_client.CreateNamespace(*createNamespaceArg)
+		dc.CreateNamespace(*createNamespaceArg)
 	case deleteNamespace.FullCommand():
-		dfree_client.DeleteNamespace(*deleteNamespaceArg)
+		dc.DeleteNamespace(*deleteNamespaceArg)
 	case describeNamespace.FullCommand():
-		dfree_client.DescribeNamespace(*describeNamespaceArg)
+		dc.DescribeNamespace(*describeNamespaceArg)
 	case describeInstance.FullCommand():
-		dfree_client.DescribeInstance(*describeInstanceArg, *describeInstanceFlag)
+		dc.DescribeInstance(*describeInstanceArg, *describeInstanceFlag)
 	case logs.FullCommand():
-		dfree_client.LogsFInstance(*namespaceOfInstance, *logInstanceName, *follow)
+		dc.LogsFInstance(*namespaceOfInstance, *logInstanceName, *follow)
 	case getTemplate.FullCommand():
-		dfree_client.ListTemplates()
+		dc.ListTemplates()
 	}
 }
 
