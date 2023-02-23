@@ -1,22 +1,15 @@
 package dfree_resource
 
 import (
+	yaml2 "dfree/pkg/yaml"
 	"github.com/stretchr/testify/require"
-	"gopkg.in/yaml.v3"
-	"io"
-	"os"
 	"testing"
 )
 
 func TestInstanceV1(t *testing.T) {
-	fDemo, _ := os.Open("testdata/instance-demo.yaml")
-	defer func(fDemo *os.File) {
-		_ = fDemo.Close()
-	}(fDemo)
-	fDemoBytes, _ := io.ReadAll(fDemo)
-
 	df := DfreeInstanceV1{}
-	err := yaml.Unmarshal(fDemoBytes, &df)
+	err := yaml2.Unmarshal("testdata/instance-demo.yaml", &df)
+
 	require.Nil(t, err)
 	require.Equal(t, "apps/v1", df.ApiVersion)
 	require.Equal(t, "DfreeInstance", df.Kind)

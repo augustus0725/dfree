@@ -4,13 +4,13 @@ import (
 	"bufio"
 	"bytes"
 	"dfree/cmd/dfreectl/dfree_client"
+	yaml2 "dfree/pkg/yaml"
 	"errors"
 	"fmt"
 	"github.com/go-resty/resty/v2"
 	"github.com/jedib0t/go-pretty/v6/table"
 	"gopkg.in/alecthomas/kingpin.v2"
 	"gopkg.in/yaml.v3"
-	"io"
 	"os"
 	"os/exec"
 	"os/user"
@@ -159,21 +159,7 @@ func detectConfig() error {
 			}
 		}
 	} else {
-		fConf, err := os.Open(dfreeConf)
-		if err != nil {
-			return err
-		}
-		defer func(fConf *os.File) {
-			err := fConf.Close()
-			if err != nil {
-				// Ignore
-			}
-		}(fConf)
-		allBytes, err := io.ReadAll(fConf)
-		if err != nil {
-			return err
-		}
-		err = yaml.Unmarshal(allBytes, &config)
+		err = yaml2.Unmarshal(dfreeConf, &config)
 		if err != nil {
 			return err
 		}

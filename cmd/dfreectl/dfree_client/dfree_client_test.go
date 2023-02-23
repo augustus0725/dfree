@@ -62,3 +62,9 @@ func TestListTemplates(t *testing.T) {
 
 	dc.ListTemplates()
 }
+
+func TestApply(t *testing.T) {
+	dc := createDfreeClient()
+
+	dc.Apply("testdata/instance-demo.yaml")
+}

@@ -1,6 +1,8 @@
 package dfree_client
 
 import (
+	"dfree/cmd/dfreectl/dfree_resource"
+	"dfree/pkg/yaml"
 	"fmt"
 	"github.com/go-resty/resty/v2"
 	"github.com/jedib0t/go-pretty/v6/table"
@@ -110,8 +112,61 @@ func (dc DfreeClient) ListTemplates() {
 	dc.TableWriter.Render()
 }
 
-func (dc DfreeClient) Apply(resource string) {
+type CommonResource struct {
+	ApiVersion string `yaml:"apiVersion"`
+	Kind       string `yaml:"kind"`
+}
 
+type ScheduleStrategy struct {
+	SchedulingStrategy string `json:"schedulingStrategy"`
+	SchedulingPeriod   string `json:"schedulingPeriod"`
+}
+
+type CreateInstance struct {
+	Namespace string `json:"namespace"`
+	Instance  string `json:"instance"`
+	Template  string `json:"template"`
+
+	Properties       map[string]map[string]string `json:"properties"`
+	ScheduleStrategy ScheduleStrategy             `json:"scheduleStrategy"`
+}
+
+type CreateInstanceResponse struct {
+	Success bool   `json:"success"`
+	Data    string `json:"data"`
+}
+
+func (dc DfreeClient) Apply(resource string) {
+	cr := CommonResource{}
+	err := yaml.Unmarshal(resource, &cr)
+	if err != nil {
+		return
+	}
+	if "apps/v1" == cr.ApiVersion && "DfreeInstance" == cr.Kind {
+		dfv1 := dfree_resource.DfreeInstanceV1{}
+		err = yaml.Unmarshal(resource, &dfv1)
+		if err != nil {
+			return
+		}
+		// create dfree instance
+		result := CreateInstanceResponse{}
+		_, err := dc.Client.R().SetBody(&CreateInstance{
+			Namespace:  dfv1.Metadata.Namespace,
+			Instance:   dfv1.Metadata.Name,
+			Template:   dfv1.Spec.Instance.Template,
+			Properties: dfv1.Spec.Instance.Properties,
+			ScheduleStrategy: ScheduleStrategy{
+				SchedulingStrategy: dfv1.Spec.Instance.ScheduleStrategy.SchedulingStrategy,
+				SchedulingPeriod:   dfv1.Spec.Instance.ScheduleStrategy.SchedulingPeriod,
+			},
+		}).SetResult(result).Put(dc.DaemonAddress + "/dfree-daemon/api/v1/instance")
+		if err != nil && !result.Success {
+			println(fmt.Sprintf("apply resource : %s fail to create instance: %s from template: %s",
+				resource, dfv1.Metadata.Name, dfv1.Spec.Instance.Template))
+			return
+		}
+		println(fmt.Sprintf("apply resource : %s success", resource))
+	}
 }
 
 func (dc DfreeClient) GetInstances(namespace string) {
