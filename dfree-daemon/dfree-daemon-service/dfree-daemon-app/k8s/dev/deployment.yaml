@@ -1,0 +1,36 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: dfree-daemon-app
+  namespace: dev
+  labels:
+    k8s.kuboard.cn/layer: svc
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: dfree-daemon-app
+  template:
+    metadata:
+      labels:
+        app: dfree-daemon-app
+    spec:
+      # nodeSelector:
+      #   online: "false"
+      containers:
+        - name: dfree-daemon-app
+          image: 192.168.0.178:8088/dfree-daemon-app:dev
+          imagePullPolicy: Always
+          command: [ "/bin/bash" ]
+          args: [ "/opt/app/docker-entrypoint.sh", "dev" ]
+          env:
+            - name: TZ
+              value: "Asia/Shanghai"
+            - name: LANG
+              value: "en_US.UTF-8"
+          resources:
+            limits:
+              memory: "512Mi"
+              cpu: "512m"
+          ports:
+            - containerPort: 8080
