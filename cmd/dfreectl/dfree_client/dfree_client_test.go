@@ -80,3 +80,9 @@ func TestStopInstance(t *testing.T) {
 
 	dc.StopInstance("ods", "helloinstance")
 }
+
+func TestGetInstance(t *testing.T) {
+	dc := createDfreeClient()
+
+	dc.GetInstances("ods")
+}

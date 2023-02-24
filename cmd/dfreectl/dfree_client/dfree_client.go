@@ -169,8 +169,33 @@ func (dc DfreeClient) Apply(resource string) {
 	}
 }
 
-func (dc DfreeClient) GetInstances(namespace string) {
+type InstancesStatus struct {
+	Name              string `json:"name"`
+	Status            string `json:"status"`
+	RunningProcessors int32  `json:"runningProcessors"`
+	StoppedProcessors int32  `json:"stoppedProcessors"`
+}
 
+type GetInstancesResponse struct {
+	Success bool              `json:"success"`
+	Data    []InstancesStatus `json:"data"`
+}
+
+func (dc DfreeClient) GetInstances(namespace string) {
+	result := GetInstancesResponse{}
+	_, err := dc.Client.R().SetQueryParam("namespace", namespace).
+		SetResult(&result).Get(dc.DaemonAddress + "/dfree-daemon/api/v1/instances")
+	if err != nil && !result.Success {
+		println(fmt.Sprintf("query instances in namespace : %s fail", namespace))
+		return
+	}
+	// title
+	dc.TableWriter.AppendHeader(table.Row{"NAME", "RUNNING_PROCESSORS", "STOPPED_PROCESSORS", "STATUS"})
+	// data
+	for _, v := range result.Data {
+		dc.TableWriter.AppendRow(table.Row{v.Name, v.RunningProcessors, v.StoppedProcessors, v.Status})
+	}
+	dc.TableWriter.Render()
 }
 
 func (dc DfreeClient) LogsFInstance(namespace string, instance string, follow bool) {
