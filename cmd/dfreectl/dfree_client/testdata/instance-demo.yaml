@@ -13,4 +13,4 @@ spec:
       schedulingPeriod: "* * * * * ?"
     properties:
       dfree_getfile_v01:
-        "Input Directory": "/opt/getfile/001"
+        "Input Directory": "/opt/getfile"

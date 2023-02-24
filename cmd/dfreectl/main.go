@@ -29,8 +29,15 @@ var (
 	getNamespace    = get.Command("namespaces", "get all namespaces")
 	getInstance     = get.Command("instance", "get all instances")
 	getInstanceFlag = getInstance.Flag("namespace", "filter by namespace").Short('n').Required().String()
+	getTemplate     = get.Command("templates", "get all templates")
 
-	getTemplate = get.Command("templates", "get all templates")
+	start                  = app.Command("start", "Start instance")
+	startInstanceNamespace = start.Flag("namespace", "instance namespace").Short('n').Required().String()
+	startInstance          = app.Arg("instance name", "The instance we will start.").Required().String()
+
+	stop                  = app.Command("stop", "stop instance")
+	stopInstanceNamespace = stop.Flag("namespace", "instance namespace").Short('n').Required().String()
+	stopInstance          = app.Arg("instance name", "The instance we will stop.").Required().String()
 
 	create             = app.Command("create", "create some resource")
 	createNamespace    = create.Command("namespace", "create a namespace")
@@ -91,6 +98,10 @@ func main() {
 		dc.LogsFInstance(*namespaceOfInstance, *logInstanceName, *follow)
 	case getTemplate.FullCommand():
 		dc.ListTemplates()
+	case start.FullCommand():
+		dc.StartInstance(*startInstanceNamespace, *startInstance)
+	case stop.FullCommand():
+		dc.StopInstance(*stopInstanceNamespace, *stopInstance)
 	}
 }
 

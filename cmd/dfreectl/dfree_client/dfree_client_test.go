@@ -68,3 +68,15 @@ func TestApply(t *testing.T) {
 
 	dc.Apply("testdata/instance-demo.yaml")
 }
+
+func TestStartInstance(t *testing.T) {
+	dc := createDfreeClient()
+
+	dc.StartInstance("ods", "helloinstance")
+}
+
+func TestStopInstance(t *testing.T) {
+	dc := createDfreeClient()
+
+	dc.StopInstance("ods", "helloinstance")
+}

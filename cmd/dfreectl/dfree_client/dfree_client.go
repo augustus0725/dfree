@@ -176,3 +176,47 @@ func (dc DfreeClient) GetInstances(namespace string) {
 func (dc DfreeClient) LogsFInstance(namespace string, instance string, follow bool) {
 
 }
+
+type StartInstance struct {
+	Namespace string `json:"namespace"`
+	Instance  string `json:"instance"`
+}
+
+type StartInstanceResponse struct {
+	Success bool `json:"success"`
+}
+
+func (dc DfreeClient) StartInstance(namespace string, instance string) {
+	result := StartInstanceResponse{}
+	_, err := dc.Client.R().SetBody(&StartInstance{
+		Namespace: namespace,
+		Instance:  instance,
+	}).SetResult(result).Put(dc.DaemonAddress + "/dfree-daemon/api/v1/instance/start")
+	if err != nil && !result.Success {
+		println(fmt.Sprintf("start namespace: %s instance: %s fail", namespace, instance))
+		return
+	}
+	println(fmt.Sprintf("start namespace: %s instance: %s success", namespace, instance))
+}
+
+type StopInstance struct {
+	Namespace string `json:"namespace"`
+	Instance  string `json:"instance"`
+}
+
+type StopInstanceResponse struct {
+	Success bool `json:"success"`
+}
+
+func (dc DfreeClient) StopInstance(namespace string, instance string) {
+	result := StopInstanceResponse{}
+	_, err := dc.Client.R().SetBody(&StopInstance{
+		Namespace: namespace,
+		Instance:  instance,
+	}).SetResult(result).Put(dc.DaemonAddress + "/dfree-daemon/api/v1/instance/stop")
+	if err != nil && !result.Success {
+		println(fmt.Sprintf("stop namespace: %s instance: %s fail", namespace, instance))
+		return
+	}
+	println(fmt.Sprintf("stop namespace: %s instance: %s success", namespace, instance))
+}
