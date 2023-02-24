@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: dfree-daemon-app
+  namespace: prod
+spec:
+  selector:
+    app: dfree-daemon-app
+  ports:
+    - port: 8080
+      targetPort: 8080

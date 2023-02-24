@@ -1,0 +1,76 @@
+<project name="dfree" default="dist" basedir=".">
+    <description>
+        dfree is a new way to use apache nifi.
+    </description>
+    <!-- set global properties for this build -->
+    <property name="dfree-daemon" location="dfree-daemon"/>
+    <property name="build" location="build"/>
+    <property name="version" location="0.0.1"/>
+    <property name="destfile" location="./build/dfree-0.0.1.zip"/>
+
+    <!-- import system env -->
+    <property environment="env"/>
+
+    <target name="init">
+        <!-- Create the time stamp -->
+        <tstamp/>
+        <!-- Create the build directory structure used by compile -->
+        <mkdir dir="${build}"/>
+        <mkdir dir="${build}/dfree"/>
+    </target>
+
+    <target name="compile" depends="init"
+            description="compile the source">
+        <!-- compile dfree-daemon -->
+        <maven src="${dfree-daemon}" arg="package"/>
+        <!--  build go project  -->
+        <exec dir="." executable="go.exe" os="Windows 7">
+            <arg line="build -o ${build}/dfree/dfreectl.exe ./cmd/dfreectl/main.go"/>
+        </exec>
+        <exec dir="." executable="go.exe" os="Windows 8.1">
+            <arg line="build -o ${build}/dfree/dfreectl.exe ./cmd/dfreectl/main.go"/>
+        </exec>
+        <exec dir="." executable="go.exe" os="Windows 10">
+            <arg line="build -o ${build}/dfree/dfreectl.exe ./cmd/dfreectl/main.go"/>
+        </exec>
+        <exec dir="." executable="go.exe" os="Windows 11">
+            <arg line="build -o ${build}/dfree/dfreectl.exe ./cmd/dfreectl/main.go"/>
+        </exec>
+        <exec dir="." executable="go.exe" os="Linux">
+            <arg line="build -o ${build}/dfree/dfreectl ./cmd/dfreectl/main.go"/>
+        </exec>
+    </target>
+
+    <target name="dist" depends="compile" description="generate the distribution">
+        <move file="./dfree-daemon/dfree-daemon-service/dfree-daemon-app/target/dfree-daemon-app-0.0.1-SNAPSHOT.jar" todir="${build}/dfree"/>
+        <zip destfile="${destfile}" basedir="${build}/dfree" update="true"/>
+    </target>
+
+    <target name="clean"
+            description="clean up">
+        <delete dir="${build}"/>
+        <maven src="dfree-daemon" arg="clean" />
+    </target>
+
+    <macrodef name="maven">
+        <attribute name="src" default="."/>
+        <attribute name="arg" default="compile"/>
+        <sequential>
+            <exec dir="@{src}" executable="cmd.exe" os="Windows 7">
+                <arg line="/c ${env.MAVEN_HOME}\bin\mvn.cmd @{arg}"/>
+            </exec>
+            <exec dir="@{src}" executable="cmd.exe" os="Windows 8.1">
+                <arg line="/c ${env.MAVEN_HOME}\bin\mvn.cmd @{arg}"/>
+            </exec>
+            <exec dir="@{src}" executable="cmd.exe" os="Windows 10">
+                <arg line="/c ${env.MAVEN_HOME}\bin\mvn.cmd @{arg}"/>
+            </exec>
+            <exec dir="@{src}" executable="cmd.exe" os="Windows 11">
+                <arg line="/c ${env.MAVEN_HOME}\bin\mvn.cmd @{arg}"/>
+            </exec>
+            <exec dir="@{src}" executable="mvn" os="Linux">
+                <arg line="@{arg}"/>
+            </exec>
+        </sequential>
+    </macrodef>
+</project>
