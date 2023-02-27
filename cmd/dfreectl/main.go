@@ -33,11 +33,11 @@ var (
 
 	start                  = app.Command("start", "Start instance")
 	startInstanceNamespace = start.Flag("namespace", "instance namespace").Short('n').Required().String()
-	startInstance          = app.Arg("instance name", "The instance we will start.").Required().String()
+	startInstance          = start.Arg("instance name", "The instance we will start.").Required().String()
 
 	stop                  = app.Command("stop", "stop instance")
 	stopInstanceNamespace = stop.Flag("namespace", "instance namespace").Short('n').Required().String()
-	stopInstance          = app.Arg("instance name", "The instance we will stop.").Required().String()
+	stopInstance          = stop.Arg("instance name", "The instance we will stop.").Required().String()
 
 	create             = app.Command("create", "create some resource")
 	createNamespace    = create.Command("namespace", "create a namespace")
@@ -119,7 +119,7 @@ func detectConfig() error {
 	}
 	dfreeConf := path.Join(dfreeConfDir, "dfree.conf")
 	config := Config{
-		DaemonAddress: "127.0.0.1:7856",
+		DaemonAddress: "http://127.0.0.1:7856",
 	}
 	if _, err := os.Stat(dfreeConf); os.IsNotExist(err) {
 		reader := bufio.NewReader(os.Stdin)
@@ -133,7 +133,7 @@ func detectConfig() error {
 				// ignore
 			}
 		}(dfreeConfFile)
-		print(fmt.Sprintf("%s not config, use default dfree-daemon address(127.0.0.1:7856)? Y/N:", dfreeConf))
+		print(fmt.Sprintf("%s not config, use default dfree-daemon address(http://127.0.0.1:7856)? Y/N:", dfreeConf))
 		yesOrNo, err := reader.ReadString('\n')
 		if err != nil {
 			return err
@@ -149,10 +149,10 @@ func detectConfig() error {
 			if err != nil {
 				return err
 			}
-			dfreeDaemonAddress = "127.0.0.1:7856"
+			dfreeDaemonAddress = "http://127.0.0.1:7856"
 			return nil
 		} else {
-			print("Please set dfree daemon address(e.g.: 127.0.0.1:7856):")
+			print("Please set dfree daemon address(e.g.: http://127.0.0.1:7856):")
 			daemonAddress, err := reader.ReadString('\n')
 			if err != nil {
 				return err
