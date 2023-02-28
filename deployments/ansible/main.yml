@@ -1,0 +1,21 @@
+---
+
+- name: Install basic software and do basic config.
+  hosts: all
+  vars:
+   author: canbin.zhang@outlook.com
+  vars_files:
+   - var/global.yml
+  roles:
+   - role: common
+
+- name: install dns master srv, must be deploy srv
+  hosts: deploysrv
+  vars:
+   author: canbin.zhang@outlook.com
+  vars_files:
+   - var/global.yml
+  roles:
+   - role: common
+   - role: nifi-common
+   - role: nifi-1.17.0
