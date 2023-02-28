@@ -20,7 +20,13 @@ jobs:
       with:
         java-version: '11'
         distribution: 'temurin'
-    - name: Golang Action
-      uses: cedrickring/golang-action@1.6.0
+    - name: Setup Go environment
+      uses: actions/setup-go@v3.5.0
+      with:
+        # The Go version to download (if necessary) and use. Supports semver spec and ranges.
+        go-version: '1.19'
+        cache: true
+        # Used to specify the path to a dependency file - go.sum
+        # cache-dependency-path: # optional
     - name: Build with Ant
       run: ant -noinput -buildfile build.xml
