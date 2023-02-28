@@ -1,0 +1,79 @@
+---
+
+- name: Create user grafana if it not exist.
+  shell: "id -u grafana &>/dev/null || useradd grafana"
+
+- name: Create /opt/app/grafana if it does not exist
+  file:
+    path: /opt/app/grafana
+    state: directory
+    owner: grafana
+    group: grafana
+
+- name: Extract grafana-enterprise-9.1.3.linux-amd64.tar.gz into /opt/app/grafana
+  unarchive:
+    src: "3rd-repo/monitor-system/grafana/grafana-enterprise-9.1.3.linux-amd64.tar.gz"
+    dest: /opt/app/grafana
+    remote_src: no
+    owner: grafana
+    group: grafana
+
+- name: Create a grafana symbolic link
+  file:
+    src: /opt/app/grafana/grafana-9.1.3
+    dest: /opt/app/grafana/current
+    state: link
+    owner: grafana
+    group: grafana
+
+- name: Create /opt/app/grafana/current/logs if it does not exist
+  file:
+    path: /opt/app/grafana/current/logs
+    state: directory
+    owner: grafana
+    group: grafana
+
+- name: Create /opt/app/grafana/current/init if it does not exist
+  file:
+    path: /opt/app/grafana/current/init
+    state: directory
+    owner: grafana
+    group: grafana
+
+- name: Config grafana
+  template:
+    src: custom.ini.j2
+    dest: /opt/app/grafana/current/conf/custom.ini
+    owner: grafana
+    group: grafana
+
+- name: Config suervisor to start grafana
+  template:
+    src: grafana.ini.j2
+    dest: /etc/supervisord.d/grafana.ini
+
+- name: Add grafana dashboard init script.
+  template:
+    src: "{{ item }}.j2"
+    dest: /opt/app/grafana/current/init/{{ item }}
+    owner: grafana
+    group: grafana
+  with_items:
+    - init-grafana.sh
+
+- name: Copy node monitor dashboard.json to remote /opt/app/grafana/current/init/
+  copy:
+    src: 3rd-repo/monitor-system/pg_exporter/postgresql.json
+    dest: /opt/app/grafana/current/init/postgresql.json
+    mode: '0744'
+
+- name: Copy postgresql monitor dashboard.json to remote /opt/app/grafana/current/init/
+  copy:
+    src: 3rd-repo/monitor-system/grafana/dashboard.json
+    dest: /opt/app/grafana/current/init/dashboard.json
+    mode: '0744'
+
+- name: Start grafana and config datasource and dashboard
+  command: bash init-grafana.sh
+  args:
+    chdir: /opt/app/grafana/current/init

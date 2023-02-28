@@ -1,0 +1,76 @@
+---
+# 定义组变量
+
+
+#################### 进程守护  ################################################
+# 配置supervisor
+supervisor:
+  port: 9001
+
+#################### 数据库部分  ###############################################
+# pg的主库
+pg_primary:
+  # 创建一个新的用户pgadmin，有dba权限, 指定数据存放的目录
+  data_dir: /opt/data/pgsql/data
+  db_user: pgadmin
+  pgpass: ******
+  db_host: 192.168.0.241
+  pgport: 5432
+  # MB
+  memory_limit: 4096
+
+# 配置初始化数据库(pg-load)的配置
+pg_load:
+  db_user: pgadmin
+  db_name: dfree
+  db_host: 192.168.0.241
+  pgpass: ******
+  pgport: 5432
+
+
+
+#################### ETL部分  ###############################################
+# Nifi
+nifi:
+  port: 8022
+  zk: "192.168.0.22:2181"
+  dir_flowfile: "./flowfile_repository"
+  # content的IO最高
+  dir_content: "./content_repository"
+  dir_provenance: "./provenance_repository"
+
+
+#################### 监控部分  ###############################################
+# 配置 Prometheus, 单节点或者多节点之后nginx代理的地址
+prometheus:
+  host: 127.0.0.1
+  port: 9090
+
+jobs:
+  - name: job1
+    targets:
+      - host: 127.0.0.1
+        port: 9090
+      - host: 127.0.0.1
+        port: 9100
+    labels:
+      - key: "env"
+        value: "dev"
+
+# 配置node_exporter端口, 默认是9100
+node_exporter:
+  port: 9100
+
+# 配置grafana的端口
+grafana:
+  port: 3000
+  host: 127.0.0.1
+
+# 配置告警的服务
+alertmanager:
+  host: 127.0.0.1
+  port: 9093
+
+# postgresql
+pg_exporter:
+  port: 9187
