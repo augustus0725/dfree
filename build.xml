@@ -36,7 +36,7 @@
         <exec dir="." executable="go.exe" os="Windows 11">
             <arg line="build -o ${build}/dfree/dfreectl.exe ./cmd/dfreectl/main.go"/>
         </exec>
-        <exec dir="." executable="go.exe" os="Linux">
+        <exec dir="." executable="go" os="Linux">
             <arg line="build -o ${build}/dfree/dfreectl ./cmd/dfreectl/main.go"/>
         </exec>
     </target>
